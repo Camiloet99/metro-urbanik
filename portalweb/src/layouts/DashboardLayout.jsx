@@ -52,7 +52,6 @@ function MobileNav() {
   const items = [
     { to: "/courses", icon: homeIcon, label: "Inicio" },
     { to: "/chat", icon: chatIcon, label: "Chat Nio" },
-    { to: "/data", icon: dataIcon, label: "Datos" }, // 🔹 Mapa
     { to: "/profile", icon: profileIcon, label: "Mi perfil" },
   ];
 
@@ -152,7 +151,6 @@ export default function DashboardLayout() {
         <nav className="mt-12 flex w-full flex-col items-stretch gap-4">
           <Item to="/courses" imgSrc={homeIcon} label="Inicio" />
           <Item to="/chat" imgSrc={chatIcon} label="Chat Nio" />
-          <Item to="/data" imgSrc={dataIcon} label="Datos" /> {/* 🔹 Mapa */}
         </nav>
 
         <div className="mt-auto w-full" />

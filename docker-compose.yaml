@@ -57,17 +57,6 @@ services:
       - "8081:80"    # 👈 antes era "80:80"
     networks: [app-net]
 
-  ml-api:
-    build:
-      context: ./ml-api          # carpeta donde está tu Dockerfile y FastAPI
-    container_name: ml-api
-    ports:
-      - "8000:8000"              # quedará en http://localhost:8000
-    volumes:
-      - ./ml-api/db:/app/db      # monta seguridad_santander.db dentro del contenedor
-    networks: [app-net]
-    restart: unless-stopped
-
 networks:
   app-net:
 
