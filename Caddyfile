@@ -1,0 +1,18 @@
+datos.urbanik-hub.com {
+  encode gzip
+
+  # 🔹 API Java (backend)
+  handle_path /api/* {
+    reverse_proxy backend:8080
+  }
+
+  # 🔹 API de ML (FastAPI)
+  handle_path /ml/* {
+    reverse_proxy ml-api:8000
+  }
+
+  # 🔹 Frontend (Vite build servido por nginx o node dentro del contenedor frontend)
+  handle {
+    reverse_proxy frontend:80
+  }
+}
