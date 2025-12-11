@@ -17,9 +17,9 @@ public class WebCorsConfig {
 
         // Orígenes explícitos
         cors.setAllowedOrigins(List.of(
-                "http://40.67.148.88",
-                "http://datos.urbanik-hub.com",// frontend en Azure (puerto 80)
-                "https://datos.urbanik-hub.com",// frontend en Azure (puerto 80)
+                "http://20.246.65.7",
+                "http://metro.urbanik-hub.com",// frontend en Azure (puerto 80)
+                "https://metro.urbanik-hub.com",// frontend en Azure (puerto 80)
                 "http://localhost:5173",    // dev Vite (si usas)
                 "http://127.0.0.1:5173"
         ));
