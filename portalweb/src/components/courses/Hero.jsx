@@ -79,28 +79,6 @@ export default function Hero({
 
           {/* Botones CTA */}
           <div className="mt-3 flex w-full flex-wrap gap-2 sm:gap-3">
-            {/* Botón de mapa – va primero */}
-            {mapCtaLabel && (
-              <button
-                onClick={onMapClick}
-                className="
-                  inline-flex w-full sm:w-auto items-center justify-center gap-2
-                  rounded-full bg-white/15
-                  px-4 sm:px-5 py-2.5 text-sm font-medium
-                  transition-transform duration-150
-                  hover:bg-white/20 active:scale-[0.98]
-                  focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60
-                  shadow-[0_6px_18px_-10px_rgba(0,0,0,0.8)]
-                  cursor-pointer
-                "
-                aria-label={mapCtaLabel}
-                title={mapCtaLabel}
-              >
-                <MdMap className="text-base" />
-                {mapCtaLabel}
-              </button>
-            )}
-
             {/* Botón experiencia / test */}
             <button
               onClick={onCtaClick}
