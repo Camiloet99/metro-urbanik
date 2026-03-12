@@ -18,7 +18,7 @@ export default function Experience() {
     [user?.avatarId]
   );
 
-  const shareId = "share-92440f1f-492e-46f0-8367-9f37731e2e00";
+  const shareId = "share-658d10c5-cdbd-4a26-9477-e60f9768a2f2";
   const containerRef = useRef(null);
 
   const appRef = useRef(null);

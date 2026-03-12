@@ -43,7 +43,7 @@ export default function Courses() {
       },
       {
         key: "bosque-emociones",
-        title: "Bosque de las Eociones",
+        title: "Bosque de las Emociones",
         subtitle: "Reconéctate con tu interior",
         img: card2,
         ctaBg: "#FFC107",

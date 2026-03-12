@@ -151,6 +151,7 @@ export default function DashboardLayout() {
         <nav className="mt-12 flex w-full flex-col items-stretch gap-4">
           <Item to="/courses" imgSrc={homeIcon} label="Inicio" />
           <Item to="/chat" imgSrc={chatIcon} label="Chat Nio" />
+          <Item to="/data" imgSrc={dataIcon} label="Datos" />
         </nav>
 
         <div className="mt-auto w-full" />
