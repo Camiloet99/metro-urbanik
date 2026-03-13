@@ -231,7 +231,7 @@ export default function Courses() {
               >
                 <Hero
                   title="ConectIA"
-                  subtitle="Ecosistema de"
+                  subtitle="Ecosistema de Metro para tu bienestar emocional"
                   ctaLabel={smartCtaLabel}
                   onCtaClick={goSmart}
                   mapCtaLabel="Visualizar mapa"
@@ -269,11 +269,7 @@ export default function Courses() {
                     }
                     if (key === "test-salida") {
                       if (testFlags.exit) return;
-                      if (!testFlags.initial) {
-                        navigate("/test-inicial");
-                        return;
-                      }
-                      navigate("");
+                      navigate("/test-salida");
                       return;
                     }
                   }}

@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArcwareInit } from "@arcware-cloud/pixelstreaming-websdk";
 import { useAuth } from "@/context/AuthContext";
-import { useNavigate, useLocation, useRevalidator } from "react-router-dom";
 import { MdHome } from "react-icons/md";
 
 export default function Experience() {
@@ -24,6 +23,8 @@ export default function Experience() {
   const appRef = useRef(null);
   const streamRef = useRef(null);
   const initedRef = useRef(false);
+
+  const [streaming, setStreaming] = useState(false);
 
   const emittedOnStreamRef = useRef(false);
   const emittedAfter1sRef = useRef(false);
@@ -53,11 +54,9 @@ export default function Experience() {
       if (!app?.emitUIInteraction || !studentId || !avatarId) return;
       setTimeout(() => {
         app.emitUIInteraction({ id_estudiante: studentId });
+        app.emitUIInteraction({ id_estudiante: studentId });
         app.emitUIInteraction({ id_avatar: avatarId });
       }, 1000);
-      setTimeout(() => {
-        app.emitUIInteraction({ id_estudiante: studentId });
-      }, 10000);
     } catch (e) {
       console.error("[Arcware] emit error:", e);
     }
@@ -144,17 +143,11 @@ export default function Experience() {
 
         PixelStreaming.onStreamingStateChange((isOn) => {
           if (!isOn) return;
+          setStreaming(true);
 
           if (!emittedOnStreamRef.current) {
             emittedOnStreamRef.current = true;
             emitPair("stream-on");
-          }
-
-          if (!emittedAfter1sRef.current) {
-            emittedAfter1sRef.current = true;
-            after1sTimerRef.current = setTimeout(() => {
-              emitPair("after-1s");
-            }, 500);
           }
 
           if (!emittedOnVideoRef.current) {
@@ -174,17 +167,13 @@ export default function Experience() {
     if (streamRef.current) {
       streamRef.current.onStreamingStateChange((isOn) => {
         if (!isOn) return;
+        setStreaming(true);
 
         if (!emittedOnStreamRef.current) {
           emittedOnStreamRef.current = true;
           emitPair("stream-on(re)");
         }
-        if (!emittedAfter1sRef.current) {
-          emittedAfter1sRef.current = true;
-          after1sTimerRef.current = setTimeout(() => {
-            emitPair("after-1s(re)");
-          }, 1000);
-        }
+
         if (!emittedOnVideoRef.current) {
           attachVideoListenersOnce();
         }
@@ -226,32 +215,62 @@ export default function Experience() {
   }, []);
 
   return (
-    <section className="w-full overflow-x-hidden">
-      <div className="mx-auto max-w-[1600px]">
-        <div className="relative w-full h-[90vh] bg-black rounded-2xl shadow-2xl overflow-hidden">
-          <div ref={containerRef} className="absolute inset-0 w-full h-full" />
+    <section className="mt-4 sm:mt-6 flex flex-col gap-3 pb-4">
 
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-50 p-3 sm:p-4">
-            <div className="flex">
-              <button
-                type="button"
-                aria-label="Volver al inicio"
-                onClick={hardRedirectHome}
-                className={[
-                  "pointer-events-auto inline-flex items-center gap-2",
-                  "rounded-full px-4 py-2 sm:px-5 sm:py-2.5 font-medium",
-                  "bg-[#0B0B11]/65 backdrop-blur-md ring-1 ring-white/15",
-                  "text-white hover:bg-[#0B0B11]/80 transition",
-                  "shadow-[0_10px_24px_rgba(0,0,0,.35)]",
-                ].join(" ")}
-              >
-                <MdHome className="text-lg sm:text-xl opacity-90" />
-                <span className="text-sm sm:text-base">Volver al inicio</span>
-              </button>
-            </div>
-          </div>
+      {/* Barra superior */}
+      <div className="flex items-center justify-between px-1">
+        <div className="flex flex-col">
+          <span className="text-base font-semibold text-white/90">Experiencia inmersiva</span>
+          <span className="text-xs text-white/40">Entorno 3D interactivo · Metro de Medellín</span>
         </div>
+
+        <button
+          type="button"
+          aria-label="Volver al inicio"
+          onClick={hardRedirectHome}
+          className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm text-white/70 bg-white/5 ring-1 ring-white/10 hover:bg-white/10 hover:text-white transition"
+        >
+          <MdHome className="text-base" />
+          Inicio
+        </button>
       </div>
+
+      {/* Contenedor del stream */}
+      <div
+        className="relative w-full rounded-2xl overflow-hidden ring-1 ring-white/10 bg-[#0c0f18]"
+        style={{ height: "calc(100vh - 200px)", minHeight: 420 }}
+      >
+        {/* Player Arcware */}
+        <div ref={containerRef} className="absolute inset-0 w-full h-full" />
+
+        {/* Overlay de carga */}
+        {!streaming && (
+          <div className="absolute inset-0 z-40 flex flex-col items-center justify-center gap-4 bg-[#0c0f18]">
+            <svg
+              className="h-10 w-10 animate-spin text-white/20"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeDasharray="40 20" strokeLinecap="round" />
+            </svg>
+            <span className="text-sm text-white/30 tracking-wide">Conectando…</span>
+          </div>
+        )}
+
+        {/* Indicador en vivo */}
+        {streaming && (
+          <div className="pointer-events-none absolute top-3 right-3 z-50 flex items-center gap-1.5 rounded-full px-2.5 py-1 bg-black/50 backdrop-blur-sm ring-1 ring-white/10">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <span className="text-[11px] text-white/50">En vivo</span>
+          </div>
+        )}
+      </div>
+
+      <p className="text-center text-[11px] text-white/20">
+        Presiona <kbd className="font-mono bg-white/5 rounded px-1 text-white/30">Esc</kbd> para salir
+      </p>
+
     </section>
   );
 }

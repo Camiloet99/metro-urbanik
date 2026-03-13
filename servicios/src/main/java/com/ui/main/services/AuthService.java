@@ -6,6 +6,7 @@ import com.ui.main.repository.UserRepository;
 import com.ui.main.repository.entity.UserEntity;
 import com.ui.main.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -25,7 +27,7 @@ public class AuthService {
 
     public Mono<Boolean> verifyIdentity(String email, String dni) {
         String norm = email.toLowerCase();
-        return users.findByEmailIgnoreCase(norm)
+        return users.findByEmail(norm)
                 .map(u -> dni.equals(u.getDni()))
                 .defaultIfEmpty(false);
     }
@@ -39,7 +41,7 @@ public class AuthService {
             ));
         }
 
-        return users.findByEmailIgnoreCase(norm)
+        return users.findByEmail(norm)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Cuenta no registrada"
@@ -74,7 +76,7 @@ public class AuthService {
 
     public Mono<Void> signup(SignupReq req) {
         String norm = req.getEmail().toLowerCase();
-
+        log.info(req.toString());
         if (req.getPassword() == null || req.getPassword().length() < 8) {
             return Mono.error(new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -82,7 +84,7 @@ public class AuthService {
             ));
         }
 
-        return users.existsByEmailIgnoreCase(norm)
+        return users.existsByEmail(norm)
                 .flatMap(exists -> {
                     if (exists) {
                         return Mono.error(new ResponseStatusException(
@@ -131,7 +133,7 @@ public class AuthService {
 
     public Mono<String> login(String email, String password) {
         String norm = email.toLowerCase();
-        return users.findByEmailIgnoreCase(norm)
+        return users.findByEmail(norm)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas")))
                 .flatMap(u -> {
                     if (!Boolean.TRUE.equals(u.getEnabled()) || !encoder.matches(password, u.getPasswordHash())) {

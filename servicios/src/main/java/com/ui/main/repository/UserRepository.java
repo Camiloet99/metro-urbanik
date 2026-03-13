@@ -7,9 +7,9 @@ import reactor.core.publisher.Mono;
 
 @Repository
 public interface UserRepository extends ReactiveCrudRepository<UserEntity, Long> {
-    Mono<UserEntity> findByEmailIgnoreCase(String email);
+    Mono<UserEntity> findByEmail(String email);
 
-    Mono<Boolean> existsByEmailIgnoreCase(String email);
+    Mono<Boolean> existsByEmail(String email);
 
     Mono<Boolean> existsByDni(String dni);
 }

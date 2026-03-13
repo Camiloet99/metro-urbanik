@@ -16,7 +16,7 @@ public class UserService {
     private final UserRepository users;
 
     public Mono<UserEntity> getByEmail(String email) {
-        return users.findByEmailIgnoreCase(email)
+        return users.findByEmail(email)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 

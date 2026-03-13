@@ -20,7 +20,7 @@ function StatusRow({ value, label, color }) {
   );
 }
 
-export default function ImpactSummaryCard({ total, completed, inProgress }) {
+export default function ImpactSummaryCard({ total, altoRiesgo, completados }) {
   return (
     <div
       className="
@@ -40,7 +40,7 @@ export default function ImpactSummaryCard({ total, completed, inProgress }) {
         <img
           src={estudiantesImg}
           alt="Estudiantes"
-          className="h-9 sm:h-12 lg:h-14 w-auto object-contain"
+          className="h-9 sm:h-4 lg:h-10 w-auto object-contain"
           draggable={false}
         />
       </div>
@@ -51,8 +51,8 @@ export default function ImpactSummaryCard({ total, completed, inProgress }) {
           {total}
         </span>
         <div className="flex flex-col justify-center leading-tight text-xs sm:text-sm text-center sm:text-left">
-          <p className="text-white/85">Estudiantes</p>
-          <p className="text-white/85">impactados</p>
+          <p className="text-white/85">Participantes</p>
+          <p className="text-white/85">en la plataforma</p>
         </div>
       </div>
 
@@ -67,8 +67,8 @@ export default function ImpactSummaryCard({ total, completed, inProgress }) {
           self-center sm:self-auto
         "
       >
-        <StatusRow value={completed} label="Finalizado" color="#22c55e" />
-        <StatusRow value={inProgress} label="En proceso" color="#06b6d4" />
+        <StatusRow value={altoRiesgo}  label="Riesgo alto detectado"  color="#ef4444" />
+        <StatusRow value={completados} label="Completaron el proceso" color="#22c55e" />
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ server:
 
 spring:
   r2dbc:
-    url: r2dbc:pool:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:iu_auth}?serverTimezone=UTC
+    url: r2dbc:pool:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:iu_auth2}?serverTimezone=UTC
     username: ${DB_USER:root}
     password: ${DB_PASSWORD:root}
   sql:

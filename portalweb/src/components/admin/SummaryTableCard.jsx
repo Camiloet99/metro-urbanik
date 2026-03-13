@@ -2,27 +2,75 @@
 import { useMemo, useState } from "react";
 import Spinner from "@/components/ui/Spinner";
 
-function getCompletionState(rawStatus) {
-  const progress = getProgressFromStatus(rawStatus);
-  return progress >= 100 ? "complete" : "progress";
+
+const GENERO_MAP = {
+  male:              "Masculino",
+  female:            "Femenino",
+  "non-binary":      "No binario/a",
+  "prefer-not-say":  "Prefiero no decirlo",
+};
+
+const FOCUS_MAP = {
+  lgbtiq:           "Población LGBTIQ+",
+  ethnic:           "Población étnica",
+  "armed-conflict": "Víctima del conflicto",
+  disability:       "Persona con discapacidad",
+  "female-head":    "Mujer cabeza de hogar",
+  none:             "Ninguno",
+  "prefer-not-say": "Prefiero no decirlo",
+};
+
+const AGE_MAP = {
+  "16-25": "16 – 25",
+  "16-24": "16 – 24",
+  "25-34": "25 – 34",
+  "35-59": "35 – 59",
+  "60+":   "60+",
+};
+
+// Capitalize first letter of each word (for raw municipality slugs like "rionegro" → "Rionegro")
+const toLabel = (slug) =>
+  slug
+    ? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    : null;
+
+function RiskPill({ profile }) {
+  if (!profile) return <span className="text-white/30 text-[11px]">–</span>;
+  const cfg = {
+    BAJO:  { text: "text-emerald-300", iconCls: "text-emerald-400" },
+    MEDIO: { text: "text-amber-300",   iconCls: "text-amber-400"   },
+    ALTO:  { text: "text-red-300",     iconCls: "text-red-400"     },
+  }[profile] ?? { text: "text-white/50", iconCls: "text-white/40" };
+  return (
+    <span className={`inline-flex items-center gap-1.5 text-[11px] font-medium ${cfg.text}`}>
+      <svg viewBox="0 0 20 20" className={`h-3.5 w-3.5 flex-shrink-0 ${cfg.iconCls}`} aria-hidden="true" fill="currentColor">
+        <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 6a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 6Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+      </svg>
+      {profile.charAt(0) + profile.slice(1).toLowerCase()}
+    </span>
+  );
 }
 
-function StatusPill({ status }) {
-  const state = getCompletionState(status); // "complete" o "progress"
-  const isComplete = state === "complete";
-
+/** 6 coloured dots showing per-module completion */
+function ModuleDots({ modulosDone }) {
+  const dots = Array.isArray(modulosDone) ? modulosDone : Array(6).fill(false);
+  // Pad to 6 just in case
+  while (dots.length < 6) dots.push(false);
   return (
-    <span
-      className={[
-        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium",
-        isComplete
-          ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/60"
-          : "bg-sky-500/10 text-sky-300 border border-sky-500/60",
-      ].join(" ")}
-    >
-      <span className="h-2 w-2 rounded-full bg-current" />
-      {isComplete ? "Finalizado" : "En proceso"}
-    </span>
+    <div className="flex items-center gap-[5px]">
+      {dots.slice(0, 6).map((done, i) => (
+        <span
+          key={i}
+          title={`Módulo ${i + 1}: ${done ? "Completado" : "Pendiente"}`}
+          className={[
+            "h-[10px] w-[10px] rounded-full flex-shrink-0 transition-colors",
+            done
+              ? "bg-[#29C6F8] shadow-[0_0_6px_rgba(41,198,248,0.65)]"
+              : "bg-white/15",
+          ].join(" ")}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -117,32 +165,17 @@ export default function SummaryTableCard({
 
     const getValue = (u) => {
       switch (sortConfig.field) {
-        case "name":
-          return u.name || "";
-        case "subregion":
-          return u.subregion || "";
-        case "municipio":
-          return u.municipio || "";
-        case "genero":
-          return u.genero || "";
-        case "edad":
-          return typeof u.edad === "number"
-            ? u.edad
-            : parseInt(u.edad ?? "0", 10) || 0;
-        case "enfoque":
-          return u.enfoqueDiferencial || "";
-        case "programa":
-          return u.programa || "";
-        case "nivel":
-          return typeof u.nivel === "number"
-            ? u.nivel
-            : parseInt(u.nivel ?? "0", 10) || 0;
-        case "avance":
-          return getProgressFromStatus(u.experienceStatus);
-        case "status":
-          return u.experienceStatus || "";
-        default:
-          return "";
+        case "name":         return u.fullName || u.name || "";
+        case "document":     return u.dni || "";
+        case "motivo":       return u.motivoConsulta || "";
+        case "municipality": return u.municipality || "";
+        case "phone":      return u.phone || "";
+        case "genero":     return u.genero || "";
+        case "edad":       return u.ageRange || u.edad || "";
+        case "enfoque":    return u.differentialFocus || u.enfoqueDiferencial || "";
+        case "riesgo":     return u.riskProfile || "";
+        case "avance":     return getProgressFromStatus(u.experienceStatus);
+        default:           return "";
       }
     };
 
@@ -179,9 +212,15 @@ export default function SummaryTableCard({
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-base md:text-lg font-semibold">Tabla resumen</h3>
         <span className="text-[11px] md:text-xs text-white/60">
-          Estados:{" "}
-          <span className="text-emerald-300 font-medium">Finalizado</span> /{" "}
-          <span className="text-sky-300 font-medium">En proceso</span>
+          <span className="inline-flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-[#29C6F8]" />
+            Módulo completo
+          </span>
+          {" · "}
+          <span className="inline-flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-white/15" />
+            Pendiente
+          </span>
         </span>
       </div>
 
@@ -201,149 +240,84 @@ export default function SummaryTableCard({
             <table className="min-w-full text-xs md:text-sm">
               <thead>
                 <tr className="border-b border-white/10">
-                  <SortableHeader
-                    label="Estudiante"
-                    field="name"
-                    sortConfig={sortConfig}
-                    onSort={handleSort}
-                  />
-                  <SortableHeader
-                    label="Subregión"
-                    field="subregion"
-                    sortConfig={sortConfig}
-                    onSort={handleSort}
-                  />
-                  <SortableHeader
-                    label="Municipio"
-                    field="municipio"
-                    sortConfig={sortConfig}
-                    onSort={handleSort}
-                  />
-                  <SortableHeader
-                    label="Género"
-                    field="genero"
-                    sortConfig={sortConfig}
-                    onSort={handleSort}
-                  />
-                  <SortableHeader
-                    label="Edad"
-                    field="edad"
-                    sortConfig={sortConfig}
-                    onSort={handleSort}
-                  />
-                  <SortableHeader
-                    label="Enfoque diferencial"
-                    field="enfoque"
-                    sortConfig={sortConfig}
-                    onSort={handleSort}
-                  />
-                  <SortableHeader
-                    label="Programa"
-                    field="programa"
-                    sortConfig={sortConfig}
-                    onSort={handleSort}
-                  />
-                  <SortableHeader
-                    label="Nivel"
-                    field="nivel"
-                    sortConfig={sortConfig}
-                    onSort={handleSort}
-                  />
-                  <SortableHeader
-                    label="% de avance"
-                    field="avance"
-                    sortConfig={sortConfig}
-                    onSort={handleSort}
-                  />
-                  <SortableHeader
-                    label="Tasa de finalización"
-                    field="status"
-                    sortConfig={sortConfig}
-                    onSort={handleSort}
-                  />
+                  <SortableHeader label="Participante"         field="name"         sortConfig={sortConfig} onSort={handleSort} />
+                  <SortableHeader label="Documento"            field="document"     sortConfig={sortConfig} onSort={handleSort} />
+                  <SortableHeader label="Motivo de consulta"   field="motivo"       sortConfig={sortConfig} onSort={handleSort} />
+                  <SortableHeader label="Municipio"            field="municipality" sortConfig={sortConfig} onSort={handleSort} />
+                  <SortableHeader label="Teléfono"            field="phone"      sortConfig={sortConfig} onSort={handleSort} />
+                  <SortableHeader label="Género"              field="genero"     sortConfig={sortConfig} onSort={handleSort} />
+                  <SortableHeader label="Rango de edad"       field="edad"       sortConfig={sortConfig} onSort={handleSort} />
+                  <SortableHeader label="Enfoque diferencial" field="enfoque"    sortConfig={sortConfig} onSort={handleSort} />
+                  <SortableHeader label="Perfil de riesgo"    field="riesgo"     sortConfig={sortConfig} onSort={handleSort} />
+                  <SortableHeader label="% de avance"         field="avance"     sortConfig={sortConfig} onSort={handleSort} />
                 </tr>
               </thead>
               <tbody>
-                {sortedUsers.map((u) => {
-                  const progress = getProgressFromStatus(u.experienceStatus);
-                  return (
+                {sortedUsers.map((u) => (
                     <tr
-                      key={u.id}
+                      key={u.id ?? u.email}
                       className="border-b border-white/5 last:border-b-0 hover:bg-white/5"
                     >
                       {/* Estudiante */}
                       <td className="py-2 pr-4 align-middle">
                         <div className="flex flex-col">
                           <span className="text-xs md:text-sm text-white/75">
-                            {u.name || "-"}
+                            {u.fullName || u.name || "-"}
                           </span>
-                          <span className="text-[11px] text-white/50">
-                            {u.email}
-                          </span>
+                          <span className="text-[11px] text-white/50">{u.email}</span>
                         </div>
                       </td>
 
-                      {/* Subregión */}
+                      {/* Documento */}
+                      <td className="py-2 px-4 align-middle text-[11px] md:text-xs whitespace-nowrap">
+                        <span className="text-white/40 mr-1 uppercase">{u.documentType || "CC"}</span>
+                        {u.dni || "-"}
+                      </td>
+
+                      {/* Motivo de consulta */}
                       <td className="py-2 px-4 align-middle text-[11px] md:text-xs">
-                        {u.subregion || "-"}
+                        {u.motivoConsulta || "-"}
                       </td>
 
                       {/* Municipio */}
                       <td className="py-2 px-4 align-middle text-[11px] md:text-xs">
-                        {u.municipio || "-"}
+                        {toLabel(u.municipality) || "-"}
+                      </td>
+
+                      {/* Teléfono */}
+                      <td className="py-2 px-4 align-middle text-[11px] md:text-xs whitespace-nowrap">
+                        {u.phone || "-"}
                       </td>
 
                       {/* Género */}
                       <td className="py-2 px-4 align-middle text-[11px] md:text-xs">
-                        {u.genero || "-"}
+                        {GENERO_MAP[u.genero] || toLabel(u.genero) || "-"}
                       </td>
 
-                      {/* Edad */}
-                      <td className="py-2 px-4 align-middle text-[11px] md:text-xs">
-                        {u.edad ?? "-"}
+                      {/* Rango de edad */}
+                      <td className="py-2 px-4 align-middle text-[11px] md:text-xs whitespace-nowrap">
+                        {AGE_MAP[u.ageRange ?? u.edad] || u.ageRange || u.edad || "-"}
                       </td>
 
                       {/* Enfoque diferencial */}
-                      <td className="py-2 px-4 align-middle text-[11px] md:text-xs max-w-[200px]">
+                      <td className="py-2 px-4 align-middle text-[11px] md:text-xs max-w-[160px]">
                         <span className="line-clamp-2">
-                          {u.enfoqueDiferencial || "-"}
+                          {FOCUS_MAP[u.differentialFocus ?? u.enfoqueDiferencial] ||
+                            u.differentialFocus || u.enfoqueDiferencial || "-"}
                         </span>
                       </td>
 
-                      {/* Programa */}
-                      <td className="py-2 px-4 align-middle text-[11px] md:text-xs max-w-[200px]">
-                        <span className="line-clamp-2">
-                          {u.programa || "-"}
-                        </span>
-                      </td>
-
-                      {/* Nivel */}
-                      <td className="py-2 px-4 align-middle text-[11px] md:text-xs">
-                        {u.nivel ?? "-"}
+                      {/* Perfil de riesgo */}
+                      <td className="py-2 px-4 align-middle">
+                        <RiskPill profile={u.riskProfile} />
                       </td>
 
                       {/* % de avance */}
                       <td className="py-2 px-4 align-middle">
-                        <div className="flex items-center gap-3">
-                          <div className="relative h-2 w-20 sm:w-24 md:w-28 rounded-full bg-white/10 overflow-hidden">
-                            <div
-                              className="h-full rounded-full bg-sky-400"
-                              style={{ width: `${progress}%` }}
-                            />
-                          </div>
-                          <span className="text-[11px] md:text-xs text-white/70">
-                            {progress}%
-                          </span>
-                        </div>
-                      </td>
-
-                      {/* Tasa de finalización */}
-                      <td className="py-2 px-4 align-middle">
-                        <StatusPill status={u.experienceStatus} />
+                        <ModuleDots modulosDone={u.modulosDone} />
                       </td>
                     </tr>
-                  );
-                })}
+                  ))}
               </tbody>
             </table>
           </div>

@@ -40,16 +40,7 @@ const router = createBrowserRouter([
           { path: "/experience", element: <Experience /> },
           { path: "/map", element: <Mapa /> },
           { path: "/chat", element: <NiaChat /> },
-          { path: "/data", element: <Mapa /> },
-
-          {
-            path: "/admin",
-            element: (
-              <AdminRoute>
-                <AdminPanel />
-              </AdminRoute>
-            ),
-          },
+          { path: "/data", element: <AdminPanel /> },
         ],
       },
     ],

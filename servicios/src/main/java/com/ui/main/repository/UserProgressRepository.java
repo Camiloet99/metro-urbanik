@@ -5,7 +5,7 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Mono;
 
 public interface UserProgressRepository extends ReactiveCrudRepository<UserProgressEntity, Long> {
-    Mono<UserProgressEntity> findByEmailIgnoreCase(String email);
+    Mono<UserProgressEntity> findByEmail(String email);
 
-    Mono<Boolean> existsByEmailIgnoreCase(String email);
+    Mono<Boolean> existsByEmail(String email);
 }

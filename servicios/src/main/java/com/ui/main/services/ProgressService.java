@@ -81,7 +81,7 @@ public class ProgressService {
     }
 
     public Mono<ProgressMeRes> getMyProgress(String email) {
-        return users.findByEmailIgnoreCase(email)
+        return users.findByEmail(email)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 .flatMap(u -> external.readAll()
                         .map(list -> toRes(u, findByDni(list, u.getDni())))
@@ -90,7 +90,7 @@ public class ProgressService {
 
     public Mono<ProgressMeRes> updateMedals(String email,
                                             Boolean m1, Boolean m2, Boolean m3, Boolean m4) {
-        return users.findByEmailIgnoreCase(email)
+        return users.findByEmail(email)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 .flatMap(u -> external.readAll()
                         // usa flatMap y no retornes null
@@ -128,7 +128,7 @@ public class ProgressService {
     }
 
     public Mono<Void> markTestDone(String email, TestSubmitReq req) {
-        return users.findByEmailIgnoreCase(email)
+        return users.findByEmail(email)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 .flatMap(u -> {
                     String kind = req.getKind();
